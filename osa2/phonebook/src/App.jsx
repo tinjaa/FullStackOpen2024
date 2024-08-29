@@ -77,7 +77,7 @@ const App = () => {
           personService.getAll().then(response => setPersons(response))
           showNotification(`${name} successfully deleted`,false)
         })
-        .catch(error => {
+        .catch(() => {
           showNotification(`${name} was already deleted from the server`,true)
           personService.getAll().then(response => setPersons(response))
         })
