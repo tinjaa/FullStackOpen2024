@@ -46,6 +46,10 @@ const App = () => {
           setNewName('');
           setNewNumber('');
         })
+        .catch(error => {
+        showNotification(error.response.data.error,true)
+  
+        })
       }
 
     } else {
