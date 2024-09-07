@@ -6,10 +6,20 @@ const { test, after, beforeEach } = require('node:test')
 const Blog = require('../models/blog')
 const api = supertest(app)
 const helper = require('./test_helper')
+const User = require('../models/user')
+const agent = require('supertest')
+
+agent = supertest(app)
+const response = await agent.post('/api/auth/login', { username: 'tester', password: 'tester' });
+agent.auth(response.accessToken, { type: 'bearer' });
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+
+  await User.deleteMany({})
+  await User.insertMany(helper.initialUsers)
+
 })
 
 test('blogs are returned as json', async () => {
@@ -54,6 +64,27 @@ test('a valid blog can be added', async () => {
 
   assert(titles.includes('test title'))
 })
+
+test('should return 401 Unauthorized if token is missing when adding a blog', async () => {
+  const newBlog = {
+    title: 'Unauthorized blog post',
+    author: 'No token author',
+    url: 'unauthorized.com',
+    likes: 0,
+  }
+
+    agent.set('Authorization', '') 
+  
+  const response = await agent
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(401)
+
+  agent.auth(accessToken, { type: 'bearer' });
+
+  assert.strictEqual(response.status, 401)
+});
+
 
 test('default value for likes should be set as 0', async() => {
   const newBlog = {
